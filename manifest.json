@@ -2,7 +2,7 @@
   "name": "Meal Reminder - Nutrition Tracker",
   "short_name": "Meal Reminder",
   "description": "Never miss a meal with timely reminders for your nutrition goals",
-  "start_url": "./meal-reminder.html",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#667eea",
   "theme_color": "#2563eb",
