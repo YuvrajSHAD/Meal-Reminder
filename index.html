@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#2563eb">
-    <link rel="manifest" href="./manifest.json">
-    <title>Meal Reminder - Your Nutrition Tracker</title>
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Meal Reminder</title>
     <style>
         * {
             margin: 0;
@@ -14,7 +16,7 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
@@ -94,16 +96,6 @@
             background: #1d4ed8;
         }
 
-        .btn-success {
-            background: #10b981;
-            color: white;
-        }
-
-        .btn-danger {
-            background: #ef4444;
-            color: white;
-        }
-
         .meal-list {
             margin-top: 20px;
         }
@@ -141,34 +133,6 @@
             color: #6b7280;
         }
 
-        .install-prompt {
-            background: linear-gradient(135deg, #f59e0b, #d97706);
-            color: white;
-            padding: 20px;
-            border-radius: 12px;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .install-prompt h3 {
-            margin-bottom: 12px;
-        }
-
-        .install-prompt p {
-            font-size: 14px;
-            margin-bottom: 16px;
-            opacity: 0.95;
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        .emoji {
-            font-size: 24px;
-            margin-right: 8px;
-        }
-
         .footer {
             text-align: center;
             color: white;
@@ -182,6 +146,25 @@
             color: white;
             width: 100%;
             margin-top: 12px;
+        }
+
+        .info-box {
+            background: #dbeafe;
+            border: 2px solid #3b82f6;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            color: #1e40af;
+        }
+
+        .info-box h3 {
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+
+        .info-box p {
+            font-size: 13px;
+            line-height: 1.5;
         }
 
         @media (max-width: 480px) {
@@ -208,10 +191,9 @@
             <p>Stay on track with your nutrition goals</p>
         </div>
 
-        <div id="installPrompt" class="install-prompt hidden">
-            <h3>📱 Install This App</h3>
-            <p>Add to your home screen for easy access and notifications</p>
-            <button class="btn btn-primary" id="installBtn">Install Now</button>
+        <div class="info-box">
+            <h3>📱 How to Use</h3>
+            <p>Bookmark this page or add to home screen. Enable notifications below to get meal reminders throughout the day!</p>
         </div>
 
         <div class="card">
@@ -297,7 +279,10 @@
     </div>
 
     <script>
-        // Meal times (24-hour format)
+        // Save notification state to localStorage
+        const STORAGE_KEY = 'mealReminder_notificationsEnabled';
+        
+        // Meal times
         const meals = [
             { time: '06:30', name: 'Early Morning', desc: 'Time for warm water + soaked nuts & banana!' },
             { time: '08:30', name: 'Breakfast', desc: 'Fuel up! Parathas/Poha + dal/curd + milk' },
@@ -309,34 +294,13 @@
             { time: '22:30', name: 'Before Sleep', desc: 'Wind down: Milk + turmeric + nuts' }
         ];
 
-        let deferredPrompt;
-        let notificationsEnabled = false;
+        let notificationsEnabled = localStorage.getItem(STORAGE_KEY) === 'true';
 
-        // Service Worker Registration
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./sw.js').then(registration => {
-                console.log('Service Worker registered');
-            }).catch(err => {
-                console.log('Service Worker registration failed:', err);
-            });
+        // Check permission on load
+        if (Notification.permission === 'granted' && notificationsEnabled) {
+            updateNotificationStatus(true);
+            scheduleAllNotifications();
         }
-
-        // Install prompt
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            document.getElementById('installPrompt').classList.remove('hidden');
-        });
-
-        document.getElementById('installBtn').addEventListener('click', async () => {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                console.log(`User response: ${outcome}`);
-                deferredPrompt = null;
-                document.getElementById('installPrompt').classList.add('hidden');
-            }
-        });
 
         // Enable Notifications
         document.getElementById('enableNotifications').addEventListener('click', async () => {
@@ -349,7 +313,8 @@
             
             if (permission === 'granted') {
                 notificationsEnabled = true;
-                updateNotificationStatus();
+                localStorage.setItem(STORAGE_KEY, 'true');
+                updateNotificationStatus(true);
                 scheduleAllNotifications();
                 alert('✅ Notifications enabled! You\'ll get reminders for all meals.');
             } else {
@@ -359,18 +324,18 @@
 
         // Test notification
         document.getElementById('testNotification').addEventListener('click', () => {
-            if (notificationsEnabled) {
+            if (notificationsEnabled && Notification.permission === 'granted') {
                 showNotification('Test Notification', 'Your meal reminders are working! 🎉');
             } else {
                 alert('Please enable notifications first!');
             }
         });
 
-        function updateNotificationStatus() {
+        function updateNotificationStatus(enabled) {
             const statusDiv = document.getElementById('notificationStatus');
             const btn = document.getElementById('enableNotifications');
             
-            if (notificationsEnabled) {
+            if (enabled) {
                 statusDiv.className = 'notification-status active';
                 statusDiv.innerHTML = '<span class="status-text">🔔 Notifications: ON</span>';
                 btn.style.display = 'none';
@@ -378,18 +343,11 @@
         }
 
         function showNotification(title, body) {
-            if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-                navigator.serviceWorker.controller.postMessage({
-                    type: 'SHOW_NOTIFICATION',
-                    title: title,
-                    body: body
-                });
-            } else {
+            if (Notification.permission === 'granted') {
                 new Notification(title, {
                     body: body,
-                    icon: 'icon-192.png',
-                    badge: 'icon-192.png',
-                    vibrate: [200, 100, 200]
+                    vibrate: [200, 100, 200],
+                    tag: 'meal-reminder'
                 });
             }
         }
@@ -402,32 +360,28 @@
 
         function scheduleNotification(meal) {
             const [hours, minutes] = meal.time.split(':');
-            const now = new Date();
-            const scheduledTime = new Date();
-            scheduledTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+            
+            function scheduleNext() {
+                const now = new Date();
+                const scheduledTime = new Date();
+                scheduledTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
 
-            // If time has passed today, schedule for tomorrow
-            if (scheduledTime <= now) {
-                scheduledTime.setDate(scheduledTime.getDate() + 1);
+                // If time has passed today, schedule for tomorrow
+                if (scheduledTime <= now) {
+                    scheduledTime.setDate(scheduledTime.getDate() + 1);
+                }
+
+                const timeUntilNotification = scheduledTime - now;
+
+                setTimeout(() => {
+                    if (localStorage.getItem(STORAGE_KEY) === 'true') {
+                        showNotification(`🍽️ ${meal.name}`, meal.desc);
+                    }
+                    scheduleNext(); // Reschedule for next day
+                }, timeUntilNotification);
             }
 
-            const timeUntilNotification = scheduledTime - now;
-
-            setTimeout(() => {
-                showNotification(`🍽️ ${meal.name}`, meal.desc);
-                
-                // Reschedule for next day
-                setInterval(() => {
-                    showNotification(`🍽️ ${meal.name}`, meal.desc);
-                }, 24 * 60 * 60 * 1000);
-            }, timeUntilNotification);
-        }
-
-        // Check if notifications are already enabled
-        if (Notification.permission === 'granted') {
-            notificationsEnabled = true;
-            updateNotificationStatus();
-            scheduleAllNotifications();
+            scheduleNext();
         }
     </script>
 </body>
