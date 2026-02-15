@@ -7,6 +7,10 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Meal Reminder">
+    <link rel="manifest" href="/Meal-Reminder/manifest.json">
+    <link rel="icon" type="image/png" sizes="192x192" href="/Meal-Reminder/icon-192.png">
+    <link rel="apple-touch-icon" href="/Meal-Reminder/icon-512.png">
     <title>Meal Reminder</title>
     <style>
         * {
@@ -21,6 +25,7 @@
             min-height: 100vh;
             padding: 20px;
             color: #1f2937;
+            overflow-x: hidden;
         }
 
         .container {
@@ -148,28 +153,13 @@
             margin-top: 12px;
         }
 
-        .info-box {
-            background: #dbeafe;
-            border: 2px solid #3b82f6;
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 20px;
-            color: #1e40af;
-        }
-
-        .info-box h3 {
-            margin-bottom: 8px;
-            font-size: 16px;
-        }
-
-        .info-box p {
-            font-size: 13px;
-            line-height: 1.5;
-        }
-
         @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
             .container {
-                padding: 0 10px;
+                padding: 0;
             }
             
             .meal-item {
@@ -189,11 +179,6 @@
         <div class="header">
             <h1>🍽️ Meal Reminder</h1>
             <p>Stay on track with your nutrition goals</p>
-        </div>
-
-        <div class="info-box">
-            <h3>📱 How to Use</h3>
-            <p>Bookmark this page or add to home screen. Enable notifications below to get meal reminders throughout the day!</p>
         </div>
 
         <div class="card">
@@ -296,6 +281,13 @@
 
         let notificationsEnabled = localStorage.getItem(STORAGE_KEY) === 'true';
 
+        // Register service worker for standalone mode
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/Meal-Reminder/sw.js', { scope: '/Meal-Reminder/' })
+                .then(reg => console.log('SW registered'))
+                .catch(err => console.log('SW error:', err));
+        }
+
         // Check permission on load
         if (Notification.permission === 'granted' && notificationsEnabled) {
             updateNotificationStatus(true);
@@ -347,7 +339,8 @@
                 new Notification(title, {
                     body: body,
                     vibrate: [200, 100, 200],
-                    tag: 'meal-reminder'
+                    tag: 'meal-reminder',
+                    requireInteraction: false
                 });
             }
         }
@@ -366,7 +359,6 @@
                 const scheduledTime = new Date();
                 scheduledTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
 
-                // If time has passed today, schedule for tomorrow
                 if (scheduledTime <= now) {
                     scheduledTime.setDate(scheduledTime.getDate() + 1);
                 }
@@ -377,7 +369,7 @@
                     if (localStorage.getItem(STORAGE_KEY) === 'true') {
                         showNotification(`🍽️ ${meal.name}`, meal.desc);
                     }
-                    scheduleNext(); // Reschedule for next day
+                    scheduleNext();
                 }, timeUntilNotification);
             }
 
