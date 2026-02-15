@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#2563eb">
+    <link rel="manifest" href="manifest.json">
+    <title>Meal Reminder - Your Nutrition Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #1f2937;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .notification-status {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            background: #f3f4f6;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .notification-status.active {
+            background: #d1fae5;
+            border: 2px solid #10b981;
+        }
+
+        .notification-status.inactive {
+            background: #fee2e2;
+            border: 2px solid #ef4444;
+        }
+
+        .status-text {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .meal-list {
+            margin-top: 20px;
+        }
+
+        .meal-item {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            background: #f9fafb;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            border-left: 4px solid #2563eb;
+        }
+
+        .meal-time {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2563eb;
+            min-width: 80px;
+        }
+
+        .meal-details {
+            flex: 1;
+            margin-left: 16px;
+        }
+
+        .meal-name {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+
+        .meal-desc {
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        .install-prompt {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .install-prompt h3 {
+            margin-bottom: 12px;
+        }
+
+        .install-prompt p {
+            font-size: 14px;
+            margin-bottom: 16px;
+            opacity: 0.95;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .emoji {
+            font-size: 24px;
+            margin-right: 8px;
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            font-size: 13px;
+            margin-top: 30px;
+            opacity: 0.8;
+        }
+
+        .test-btn {
+            background: #8b5cf6;
+            color: white;
+            width: 100%;
+            margin-top: 12px;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 0 10px;
+            }
+            
+            .meal-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .meal-details {
+                margin-left: 0;
+                margin-top: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🍽️ Meal Reminder</h1>
+            <p>Stay on track with your nutrition goals</p>
+        </div>
+
+        <div id="installPrompt" class="install-prompt hidden">
+            <h3>📱 Install This App</h3>
+            <p>Add to your home screen for easy access and notifications</p>
+            <button class="btn btn-primary" id="installBtn">Install Now</button>
+        </div>
+
+        <div class="card">
+            <div id="notificationStatus" class="notification-status inactive">
+                <span class="status-text">🔕 Notifications: OFF</span>
+                <button class="btn btn-primary" id="enableNotifications">Enable</button>
+            </div>
+
+            <button class="btn test-btn" id="testNotification">🔔 Test Notification</button>
+
+            <div class="meal-list">
+                <h3 style="margin-bottom: 16px; font-size: 18px;">📅 Daily Meal Schedule</h3>
+                
+                <div class="meal-item">
+                    <div class="meal-time">06:30</div>
+                    <div class="meal-details">
+                        <div class="meal-name">🌅 Early Morning</div>
+                        <div class="meal-desc">Warm water + soaked nuts & banana</div>
+                    </div>
+                </div>
+
+                <div class="meal-item">
+                    <div class="meal-time">08:30</div>
+                    <div class="meal-details">
+                        <div class="meal-name">🍳 Breakfast</div>
+                        <div class="meal-desc">Parathas/Poha + dal/curd + milk</div>
+                    </div>
+                </div>
+
+                <div class="meal-item">
+                    <div class="meal-time">11:00</div>
+                    <div class="meal-details">
+                        <div class="meal-name">🥜 Mid-Morning</div>
+                        <div class="meal-desc">Peanut butter + bread + fruit + nuts</div>
+                    </div>
+                </div>
+
+                <div class="meal-item">
+                    <div class="meal-time">13:30</div>
+                    <div class="meal-details">
+                        <div class="meal-name">🍛 Lunch</div>
+                        <div class="meal-desc">Chapati + dal + sabzi + rice + curd</div>
+                    </div>
+                </div>
+
+                <div class="meal-item">
+                    <div class="meal-time">16:00</div>
+                    <div class="meal-details">
+                        <div class="meal-name">💪 Pre-Workout</div>
+                        <div class="meal-desc">Bananas + dates OR protein oats</div>
+                    </div>
+                </div>
+
+                <div class="meal-item">
+                    <div class="meal-time">18:30</div>
+                    <div class="meal-details">
+                        <div class="meal-name">🥤 Post-Workout</div>
+                        <div class="meal-desc">Banana shake + peanut butter</div>
+                    </div>
+                </div>
+
+                <div class="meal-item">
+                    <div class="meal-time">20:30</div>
+                    <div class="meal-details">
+                        <div class="meal-name">🌙 Dinner</div>
+                        <div class="meal-desc">Chapati + dal/rajma + sabzi + rice</div>
+                    </div>
+                </div>
+
+                <div class="meal-item">
+                    <div class="meal-time">22:30</div>
+                    <div class="meal-details">
+                        <div class="meal-name">🥛 Before Sleep</div>
+                        <div class="meal-desc">Milk + turmeric + nuts/peanut butter</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            Made with 💪 for your strength journey
+        </div>
+    </div>
+
+    <script>
+        // Meal times (24-hour format)
+        const meals = [
+            { time: '06:30', name: 'Early Morning', desc: 'Time for warm water + soaked nuts & banana!' },
+            { time: '08:30', name: 'Breakfast', desc: 'Fuel up! Parathas/Poha + dal/curd + milk' },
+            { time: '11:00', name: 'Mid-Morning Snack', desc: 'Peanut butter + bread + fruit + nuts' },
+            { time: '13:30', name: 'Lunch', desc: 'Full meal: Chapati + dal + sabzi + rice + curd' },
+            { time: '16:00', name: 'Pre-Workout', desc: 'Energy boost! Bananas + dates OR protein oats' },
+            { time: '18:30', name: 'Post-Workout', desc: 'Recovery time! Banana shake + peanut butter' },
+            { time: '20:30', name: 'Dinner', desc: 'Evening meal: Chapati + dal/rajma + sabzi + rice' },
+            { time: '22:30', name: 'Before Sleep', desc: 'Wind down: Milk + turmeric + nuts' }
+        ];
+
+        let deferredPrompt;
+        let notificationsEnabled = false;
+
+        // Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').then(registration => {
+                console.log('Service Worker registered');
+            }).catch(err => {
+                console.log('Service Worker registration failed:', err);
+            });
+        }
+
+        // Install prompt
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('installPrompt').classList.remove('hidden');
+        });
+
+        document.getElementById('installBtn').addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                console.log(`User response: ${outcome}`);
+                deferredPrompt = null;
+                document.getElementById('installPrompt').classList.add('hidden');
+            }
+        });
+
+        // Enable Notifications
+        document.getElementById('enableNotifications').addEventListener('click', async () => {
+            if (!('Notification' in window)) {
+                alert('Your browser doesn\'t support notifications');
+                return;
+            }
+
+            const permission = await Notification.requestPermission();
+            
+            if (permission === 'granted') {
+                notificationsEnabled = true;
+                updateNotificationStatus();
+                scheduleAllNotifications();
+                alert('✅ Notifications enabled! You\'ll get reminders for all meals.');
+            } else {
+                alert('❌ Please enable notifications in your browser settings');
+            }
+        });
+
+        // Test notification
+        document.getElementById('testNotification').addEventListener('click', () => {
+            if (notificationsEnabled) {
+                showNotification('Test Notification', 'Your meal reminders are working! 🎉');
+            } else {
+                alert('Please enable notifications first!');
+            }
+        });
+
+        function updateNotificationStatus() {
+            const statusDiv = document.getElementById('notificationStatus');
+            const btn = document.getElementById('enableNotifications');
+            
+            if (notificationsEnabled) {
+                statusDiv.className = 'notification-status active';
+                statusDiv.innerHTML = '<span class="status-text">🔔 Notifications: ON</span>';
+                btn.style.display = 'none';
+            }
+        }
+
+        function showNotification(title, body) {
+            if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                navigator.serviceWorker.controller.postMessage({
+                    type: 'SHOW_NOTIFICATION',
+                    title: title,
+                    body: body
+                });
+            } else {
+                new Notification(title, {
+                    body: body,
+                    icon: 'icon-192.png',
+                    badge: 'icon-192.png',
+                    vibrate: [200, 100, 200]
+                });
+            }
+        }
+
+        function scheduleAllNotifications() {
+            meals.forEach(meal => {
+                scheduleNotification(meal);
+            });
+        }
+
+        function scheduleNotification(meal) {
+            const [hours, minutes] = meal.time.split(':');
+            const now = new Date();
+            const scheduledTime = new Date();
+            scheduledTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+
+            // If time has passed today, schedule for tomorrow
+            if (scheduledTime <= now) {
+                scheduledTime.setDate(scheduledTime.getDate() + 1);
+            }
+
+            const timeUntilNotification = scheduledTime - now;
+
+            setTimeout(() => {
+                showNotification(`🍽️ ${meal.name}`, meal.desc);
+                
+                // Reschedule for next day
+                setInterval(() => {
+                    showNotification(`🍽️ ${meal.name}`, meal.desc);
+                }, 24 * 60 * 60 * 1000);
+            }, timeUntilNotification);
+        }
+
+        // Check if notifications are already enabled
+        if (Notification.permission === 'granted') {
+            notificationsEnabled = true;
+            updateNotificationStatus();
+            scheduleAllNotifications();
+        }
+    </script>
+</body>
+</html>
