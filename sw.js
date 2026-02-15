@@ -1,7 +1,7 @@
 const CACHE_NAME = 'meal-reminder-v1';
 const urlsToCache = [
-  '/meal-reminder.html',
-  '/manifest.json'
+  './meal-reminder.html',
+  './manifest.json'
 ];
 
 // Install Service Worker
@@ -27,8 +27,8 @@ self.addEventListener('message', event => {
     
     self.registration.showNotification(title, {
       body: body,
-      icon: 'icon-192.png',
-      badge: 'icon-192.png',
+      icon: './icon-192.png',
+      badge: './icon-192.png',
       vibrate: [200, 100, 200],
       tag: 'meal-reminder',
       requireInteraction: false,
@@ -41,6 +41,6 @@ self.addEventListener('message', event => {
 self.addEventListener('notificationclick', event => {
   event.notification.close();
   event.waitUntil(
-    clients.openWindow('/meal-reminder.html')
+    clients.openWindow('./meal-reminder.html')
   );
 });
