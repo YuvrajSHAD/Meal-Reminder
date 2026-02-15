@@ -1,6 +1,6 @@
 const CACHE_NAME = 'meal-reminder-v1';
 const urlsToCache = [
-  './meal-reminder.html',
+  './index.html',
   './manifest.json'
 ];
 
@@ -41,6 +41,6 @@ self.addEventListener('message', event => {
 self.addEventListener('notificationclick', event => {
   event.notification.close();
   event.waitUntil(
-    clients.openWindow('./meal-reminder.html')
+    clients.openWindow('./index.html')
   );
 });
